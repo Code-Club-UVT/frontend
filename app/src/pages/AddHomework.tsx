@@ -22,8 +22,9 @@ const AddHomework = () => {
 			data.append("description", formData.description);
 			data.append("password", formData.password);
 
+			const apiUrl = (window as any).__ENV__?.VITE_API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL;
 			const response = await fetch(
-				`${import.meta.env.VITE_API_BASE_URL}/TempHomework`,
+				`${apiUrl}/TempHomework`,
 				{
 					method: "POST",
 					body: data,

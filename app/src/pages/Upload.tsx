@@ -26,8 +26,9 @@ const Upload = () => {
 	} = useQuery<Homework>({
 		queryKey: ["homework", homeworkNumber],
 		queryFn: async () => {
+			const apiUrl = (window as any).__ENV__?.VITE_API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL;
 			const response = await fetch(
-				`${import.meta.env.VITE_API_BASE_URL}/TempHomework/${homeworkNumber}`,
+				`${apiUrl}/TempHomework/${homeworkNumber}`,
 			);
 			if (!response.ok) {
 				throw new Error("Failed to fetch homework");
@@ -39,11 +40,12 @@ const Upload = () => {
 
 	const { mutate: uploadFile, isPending: isUploading } = useMutation({
 		mutationFn: async (file: File) => {
+			const apiUrl = (window as any).__ENV__?.VITE_API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL;
 			const formData = new FormData();
 			formData.append("file", file);
 
 			const response = await fetch(
-				`${import.meta.env.VITE_API_BASE_URL}/TempFiles/${homework?.id}`,
+				`${apiUrl}/TempFiles/${homework?.id}`,
 				{
 					method: "POST",
 					body: formData,
