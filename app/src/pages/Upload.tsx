@@ -15,23 +15,26 @@ const Upload = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-	// Validate and redirect early if invalid
-	if (!homeworkNumber || isNaN(parseInt(homeworkNumber))) {
+	if (!homeworkNumber || Number.isNaN(parseInt(homeworkNumber, 10))) {
 		return <Navigate to="/not-found" replace />;
 	}
 
-	const { data: homework, isLoading, error } = useQuery<Homework>({
+	const {
+		data: homework,
+		isLoading,
+		error,
+	} = useQuery<Homework>({
 		queryKey: ["homework", homeworkNumber],
 		queryFn: async () => {
 			const response = await fetch(
-				`https://codeclub.info.uvt.ro:8083/TempHomework/${homeworkNumber}`
+				`${import.meta.env.VITE_API_BASE_URL}/TempHomework/${homeworkNumber}`,
 			);
 			if (!response.ok) {
 				throw new Error("Failed to fetch homework");
 			}
 			return response.json();
 		},
-		enabled: !!homeworkNumber && !isNaN(parseInt(homeworkNumber)),
+		enabled: !!homeworkNumber && !Number.isNaN(parseInt(homeworkNumber, 10)),
 	});
 
 	const { mutate: uploadFile, isPending: isUploading } = useMutation({
@@ -40,11 +43,11 @@ const Upload = () => {
 			formData.append("file", file);
 
 			const response = await fetch(
-				`https://codeclub.info.uvt.ro:8083/TempFiles/${homework!.id}`,
+				`${import.meta.env.VITE_API_BASE_URL}/TempFiles/${homework?.id}`,
 				{
 					method: "POST",
 					body: formData,
-				}
+				},
 			);
 
 			if (!response.ok) {
@@ -73,7 +76,7 @@ const Upload = () => {
 
 			if (!fileExtension || !validExtensions.includes(fileExtension)) {
 				alert(
-					"Invalid file type. Please upload a .py, .cpp, or .sb3 file."
+					"Invalid file type. Please upload a .py, .cpp, or .sb3 file.",
 				);
 				if (fileInputRef.current) {
 					fileInputRef.current.value = "";
@@ -93,7 +96,7 @@ const Upload = () => {
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center h-full w-full">
+			<div className="flex h-full w-full items-center justify-center">
 				Loading homework...
 			</div>
 		);
@@ -101,8 +104,8 @@ const Upload = () => {
 
 	if (error || !homework) {
 		return (
-			<div className="flex items-center justify-center h-full w-full flex-col">
-				<p className="text-red-500 mb-4">Failed to load homework</p>
+			<div className="flex h-full w-full flex-col items-center justify-center">
+				<p className="mb-4 text-red-500">Failed to load homework</p>
 				<Navigate to="/1" replace />
 			</div>
 		);
@@ -110,16 +113,16 @@ const Upload = () => {
 
 	return (
 		<div className={"h-full w-full"}>
-			<div className={"flex flex-col items-center h-full w-full"}>
-				<h1 className="w-full text-2xl text-center font-bold mb-8">
+			<div className={"flex h-full w-full flex-col items-center"}>
+				<h1 className="mb-8 w-full text-center font-bold text-2xl">
 					{homework.title}
 				</h1>
-				<p className="w-full mb-4">{homework.description}</p>
+				<p className="mb-4 w-full">{homework.description}</p>
 
-				<div className="flex flex-col items-center w-1/2 mt-8 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+				<div className="mt-8 flex w-1/2 flex-col items-center rounded-lg border-2 border-gray-300 border-dashed p-4">
 					<label
 						htmlFor="file-input"
-						className="block text-sm font-medium mb-2"
+						className="mb-2 block font-medium text-sm"
 					>
 						Upload File
 					</label>
@@ -129,17 +132,17 @@ const Upload = () => {
 						type="file"
 						accept=".py,.cpp,.sb3"
 						onChange={handleFileChange}
-						className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+						className="block w-full text-gray-500 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-semibold file:text-blue-700 file:text-sm hover:file:bg-blue-100"
 					/>
 					{selectedFile && (
-						<p className="mt-2 text-sm text-green-600">
+						<p className="mt-2 text-green-600 text-sm">
 							Selected: {selectedFile.name}
 						</p>
 					)}
 					<button
 						onClick={handleUpload}
 						disabled={!selectedFile || isUploading}
-						className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+						className="mt-4 rounded-md bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
 					>
 						{isUploading ? "Uploading..." : "Upload"}
 					</button>
